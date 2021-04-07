@@ -8,19 +8,14 @@ BMPFILE BMPHelper::ReadFromFile(std::string path)
 
 	if (!fin)
 	{
-		std::cout << "cant open file" << std::endl;
+		std::cout << "Can't open file" << std::endl;
 		return BMPFILE();
 	}
 	fin.read(reinterpret_cast<char*>(&bmpInfo.bmh), sizeof(bmpInfo.bmh));
 	fin.read(reinterpret_cast<char*>(&bmpInfo.bi), sizeof(bmpInfo.bi));
 	if (bmpInfo.bmh.bfType != 0x4d42)
 	{
-		std::cout << "unvalid type" << std::endl;
-		return BMPFILE();
-	}
-	if (bmpInfo.bi.biCompression != 0)
-	{
-		std::cout << "supported only uncompressed files" << std::endl;
+		std::cout << "Invalid type" << std::endl;
 		return BMPFILE();
 	}
 
@@ -42,12 +37,13 @@ BMPFILE BMPHelper::ReadFromFile(std::string path)
 	return BMPFILE(bmpInfo, pixels);
 }
 
-void BMPHelper::BlurByWidth(BMPFILE* originalBmp, BMPFILE* bluredBmp, int startWidth, int endWidth, std::ofstream* fout, clock_t startTime, int threadNumber, int radius)
+
+void BMPHelper::Blur(BMPFILE* originalBmp, BMPFILE* bluredBmp, int startHeight, int endHeight, std::ofstream* fout, clock_t startTime, int threadNumber, int radius)
 {
 	float rs = std::ceil(radius * 2.57);
-	for (int i = 0; i < originalBmp->GetHeight() - 1; ++i)
+	for (int i = 0; i < originalBmp->GetWidth() - 1; ++i)
 	{
-		for (int j = startWidth; j <= endWidth; ++j)
+		for (int j = startHeight; j <= endHeight; ++j)
 		{
 			double r = 0, g = 0, b = 0;
 			double wsum = 0;
@@ -56,8 +52,8 @@ void BMPHelper::BlurByWidth(BMPFILE* originalBmp, BMPFILE* bluredBmp, int startW
 			{
 				for (int ix = j - rs; ix < j + rs + 1; ++ix)
 				{
-					auto x = std::min(static_cast<int>(endWidth) - 1, std::max(0, ix));
-					auto y = std::min(static_cast<int>(originalBmp->GetHeight()) - 1, std::max(0, iy));
+					auto x = std::min(static_cast<int>(endHeight) - 1, std::max(0, ix));
+					auto y = std::min(static_cast<int>(originalBmp->GetWidth()) - 1, std::max(0, iy));
 					auto dsq = ((ix - j) * (ix - j)) + ((iy - i) * (iy - i));
 					auto wght = std::exp(-dsq / (2.0 * radius * radius)) / (M_PI * 2.0 * radius * radius);
 
@@ -76,10 +72,12 @@ void BMPHelper::BlurByWidth(BMPFILE* originalBmp, BMPFILE* bluredBmp, int startW
 			bluredPixel.b = std::round(b / wsum);
 			bluredBmp->SetPixel(j, i, bluredPixel);
 
-			*fout << clock() - startTime << std::endl;
+			//*fout << clock() - startTime << std::endl;
 		}
 	}
+	*fout << clock() - startTime << std::endl;
 }
+
 
 void BMPHelper::WriteBMPFile(BMPFILE* bmp, std::string path)
 {

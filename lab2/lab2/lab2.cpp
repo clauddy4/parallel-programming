@@ -21,41 +21,26 @@ struct Params
 DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
 {
 	struct Params* params = (struct Params*)lpParam;
-	BMPHelper::BlurByWidth(&*params->bmp, &*params->blured, params->start, params->end, &*params->fout, params->startTime, params->threadNumber);
+	BMPHelper::Blur(&*params->bmp, &*params->blured, params->start, params->end, &*params->fout, params->startTime, params->threadNumber);
 	ExitThread(0);
-}
-
-void WriteHowTo()
-{
-	std::cout << "Example: "
-		<< "lw4.exe" << " "
-		<< "input.bmp" << " "
-		<< "output.bmp" << " "
-		<< "threadCount" << " "
-		<< "coreCount" << " ";
 }
 
 int main(int argc, char* argv[])
 {
 	clock_t start = clock();
 
-	std::string bmpFileName = "C:\\Users\\Olga\\source\\repos\\PP\\lab2\\image.bmp";
-	std::string bluredFileName = "C:\\Users\\Olga\\source\\repos\\PP\\lab2\\imagedone.bmp";
+	std::string bmpFileName = "../in.bmp";
+	std::string bluredFileName = "../out.bmp";
 
 	std::vector<std::ofstream> outFiles;
 
 	BMPFILE bmp = BMPHelper::ReadFromFile(bmpFileName);
 
-	if (bmp.GetPixels().size() == 0)
-	{
-		return -1;
-	}
-
 	BMPFILE blured = BMPFILE(bmp);
 
-	int threadsCount = 4;
-	int coreCount = 4;
-	uint32_t width = (bmp.GetWidth() - 1) / threadsCount;
+	int threadsCount = 16;
+	int coreCount = 1;
+	uint32_t height = (bmp.GetHeight() - 1) / threadsCount;
 	std::vector<int> priority;
 	for (int i = 0; i < threadsCount; i++)
 	{
@@ -64,7 +49,7 @@ int main(int argc, char* argv[])
 
 	std::vector<Params> paramsToThread;
 
-	int minWidth = 0;
+	int minHeight = 0;
 
 	for (int i = 0; i < threadsCount; i++)
 	{
@@ -74,10 +59,10 @@ int main(int argc, char* argv[])
 		params.fout = &outFiles[i];
 		params.bmp = &bmp;
 		params.blured = &blured;
-		params.start = minWidth;
-		params.end = i == threadsCount - 1 ? bmp.GetWidth() - 1 : minWidth + width;
+		params.start = minHeight;
+		params.end = i == threadsCount - 1 ? bmp.GetHeight() - 1 : minHeight + height;
 		paramsToThread.push_back(params);
-		minWidth += width;
+		minHeight += height;
 	}
 
 	HANDLE* handles = new HANDLE[threadsCount];
