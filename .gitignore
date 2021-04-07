@@ -1,3 +1,6 @@
+.vs
+Debug
+
 # Prerequisites
 *.d
 
@@ -13,6 +16,7 @@
 
 # Compiled Dynamic libraries
 *.so
+*.suo
 *.dylib
 *.dll
 
