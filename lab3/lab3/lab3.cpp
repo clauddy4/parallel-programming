@@ -11,7 +11,7 @@ SYSTEMTIME sttime;
 DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
 {
     int param = (int)lpParam;
-    for (int j = 0; j < 20; j++)
+    for (int j = 0; j < 10; j++)
     {
         for (int i = 0; i < 999999; i++) {
             int doNothing = log(555);
@@ -19,11 +19,7 @@ DWORD WINAPI ThreadProc(CONST LPVOID lpParam)
         SYSTEMTIME curtime;
         GetSystemTime(&curtime);
         DWORD currentTime = GetTickCount();
-        float t = 2 * ((currentTime - startTime) % 20000) / 20000.0f;
-        if (t > 1.0f)
-        {
-            t = 2 - t;
-        }
+
         int calcul1 = sttime.wSecond * 1000 + sttime.wMilliseconds;
         int calcul2 = curtime.wSecond * 1000 + curtime.wMilliseconds;
         string out = to_string(param) + "\n" + to_string(calcul2 - calcul1) + "\n";
@@ -40,7 +36,6 @@ int main()
     SYSTEM_INFO SystemInfo;
     GetSystemInfo(&SystemInfo);
     unsigned int nMaxProcessorMask = (1 << 8) - 1;
-    // Set the max processor mask
     SetProcessAffinityMask(hProcess, nMaxProcessorMask);
 
     system("pause");

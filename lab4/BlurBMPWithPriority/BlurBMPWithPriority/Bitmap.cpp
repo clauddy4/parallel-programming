@@ -15,10 +15,21 @@ Bitmap::Bitmap(const char* path)
 
         if (m_bmpInfo.bfh.bfType != 0x4d42)
         {
-            throw std::runtime_error("Invalid format");
+            throw std::runtime_error("Invalid format. Only bitmaps are supported.");
         }
 
         file.read(reinterpret_cast<char*>(&m_bmpInfo.bih), sizeof(m_bmpInfo.bih));
+
+        if (m_bmpInfo.bih.biCompression != 0)
+        {
+            std::cerr << m_bmpInfo.bih.biCompression << "\n";
+            throw std::runtime_error("Invalid bitmap. Only uncompressed bitmaps are supported.");
+        }
+
+        if (m_bmpInfo.bih.biBitCount != 24 && m_bmpInfo.bih.biBitCount != 32)
+        {
+            throw std::runtime_error("Invalid bitmap. Only 24bit and 32bit bitmaps are supported.");
+        }
 
         file.seekg(m_bmpInfo.bfh.bfOffBits, std::ios::beg);
 
